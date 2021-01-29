@@ -36,4 +36,7 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    //필요한 모든 권한체크
+    implementation 'com.github.pedroSG94:AutoPermissions:1.0.3'
 }
