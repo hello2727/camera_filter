@@ -6,26 +6,19 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.LifecycleOwner;
-
-import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.example.android.camera_filter.R;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.pedro.library.AutoPermissions;
-
-import java.io.File;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
