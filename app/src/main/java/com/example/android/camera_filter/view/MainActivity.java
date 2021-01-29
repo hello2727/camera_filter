@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     Preview preview;
     ProcessCameraProvider cameraProvider;
     CameraSelector cameraSelector;
+    Camera camera;
     ImageButton btn_capture;
     ImageCapture imageCapture;
 
@@ -96,11 +97,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }, ContextCompat.getMainExecutor(this));
-
-        // 사진을 찍기 위한 기본적인 컨트롤 제공
-        imageCapture = new ImageCapture.Builder()
-                .build();
-//        cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
     }
     // 카메라 선택 및 수명 주기와 사용 사례 결합
     void bindPreview(@NonNull ProcessCameraProvider cameraProvider){
@@ -116,8 +112,12 @@ public class MainActivity extends AppCompatActivity {
         // 3. 선택한 카메라와 사용 사례를 수명 주기에 결합한다.
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
-        // 4. preview를 previewView에 연결한다.
-        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
+        // 4. 사진을 찍기 위한 기본적인 컨트롤 제공
+        imageCapture = new ImageCapture.Builder()
+                .build();
+
+        // 5. preview를 previewView에 연결한다.
+        camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
     }
 
     @Override
