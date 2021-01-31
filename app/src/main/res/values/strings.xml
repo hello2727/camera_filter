@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">camera_filter</string>
     <string name="capture_button">capture_button</string>
+    <string name="iv_captured_contentDescription">TODO</string>
+    <string name="btn_filterSelection">안녕</string>
+    <string name="tv_filterSelection">필터</string>
 </resources>
