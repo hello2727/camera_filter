@@ -5,39 +5,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
-
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
 import android.graphics.Matrix;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
-import android.media.Image;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Size;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
 import com.example.android.camera_filter.R;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.pedro.library.AutoPermissions;
-
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 
@@ -51,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
     ProcessCameraProvider cameraProvider;
     CameraSelector cameraSelector;
     Camera camera;
-    ImageAnalysis imageAnalysis;
     ImageButton btn_capture;
     ImageCapture imageCapture;
 
@@ -102,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                      .into(iv_captured);
                 previewView.setVisibility(View.GONE);
                 iv_captured.setVisibility(View.VISIBLE);
-                
+
                 imageProxy.close();
             }
 
@@ -150,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         // 사진을 찍기 위한 기본적인 컨트롤 제공
         imageCapture = new ImageCapture.Builder().build();
 
-        //회전
+        //회전(얼굴 인식에서 얼굴의 방향을 올바르게 감지하거나 사진이 가로 또는 세로 모드로 설정되도록 하기 위해 회전 인식이 필요할 수 있음)
         OrientationEventListener orientationEventListener = new OrientationEventListener(this) {
             @Override
             public void onOrientationChanged(int orientation) {
