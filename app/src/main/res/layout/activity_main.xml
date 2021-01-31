@@ -35,8 +35,9 @@
             android:id="@+id/iv_captured"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone"
-            app:srcCompat="@android:drawable/ic_menu_gallery" />
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:visibility="gone" />
 
     </FrameLayout>
 
