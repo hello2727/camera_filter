@@ -11,6 +11,8 @@ import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
+
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -18,8 +20,12 @@ import android.os.Bundle;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.android.camera_filter.R;
@@ -38,10 +44,12 @@ public class MainActivity extends AppCompatActivity {
     ProcessCameraProvider cameraProvider;
     CameraSelector cameraSelector;
     Camera camera;
-    ImageButton btn_capture;
+    ImageButton btn_capture, btn_filterSelection;
     ImageCapture imageCapture;
 
     ImageView iv_captured;
+    ScrollView sv_filter;
+    boolean isUp = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
         previewView = findViewById(R.id.previewView);
         btn_capture = findViewById(R.id.btn_capture);
         iv_captured = findViewById(R.id.iv_captured);
+        btn_filterSelection = findViewById(R.id.btn_filterSelection);
+        sv_filter = findViewById(R.id.sv_filter);
 
         //툴바를 액티비티의 앱바로 지정
         setSupportActionBar(tb);
@@ -67,6 +77,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 capture();
             }
+        });
+
+        //카메라 필터 고르기
+        btn_filterSelection.setOnClickListener(v -> {
+            Animation translateUp = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.translate_up);
+            sv_filter.setVisibility(View.VISIBLE);
+            sv_filter.startAnimation(translateUp);
+            isUp = true;
         });
     }
 
@@ -169,6 +187,11 @@ public class MainActivity extends AppCompatActivity {
         if(previewView.getVisibility() == View.GONE && iv_captured.getVisibility() == View.VISIBLE) {
             previewView.setVisibility(View.VISIBLE);
             iv_captured.setVisibility(View.GONE);
+        }else if(isUp){
+            Animation translateDown = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.translate_down);
+            sv_filter.setVisibility(View.GONE);
+            sv_filter.startAnimation(translateDown);
+            isUp = false;
         }else{
             //두번 눌러 뒤로가기 종료
             if(0 <= gapTime && 2000 >= gapTime){
