@@ -103,7 +103,7 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
                 <TextView
-                    android:id="@+id/textView"
+                    android:id="@+id/filter1"
                     android:layout_width="60dp"
                     android:layout_height="match_parent"
                     android:paddingStart="30dp"

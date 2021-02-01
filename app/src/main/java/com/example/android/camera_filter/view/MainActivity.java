@@ -23,6 +23,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.android.camera_filter.R;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView iv_captured;
     ScrollView sv_filter;
     boolean isUp = false;
+    TextView filter1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         iv_captured = findViewById(R.id.iv_captured);
         btn_filterSelection = findViewById(R.id.btn_filterSelection);
         sv_filter = findViewById(R.id.sv_filter);
+        filter1 = findViewById(R.id.filter1);
 
         //툴바를 액티비티의 앱바로 지정
         setSupportActionBar(tb);
@@ -83,6 +86,11 @@ public class MainActivity extends AppCompatActivity {
             sv_filter.startAnimation(translateUp);
             isUp = true;
         });
+
+        //카메라에 필터1 입히기
+        filter1.setOnClickListener(v -> {
+
+        });
     }
 
     void capture(){
@@ -99,14 +107,13 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap rotateImg = Bitmap.createBitmap(originImg, 0, 0, originImg.getWidth(), originImg.getHeight(), roatateMatrix, false);
 
                 Glide.with(getApplicationContext())
-                     .load(rotateImg)
-                     .into(iv_captured);
+                        .load(rotateImg)
+                        .into(iv_captured);
                 previewView.setVisibility(View.GONE);
                 iv_captured.setVisibility(View.VISIBLE);
 
                 imageProxy.close();
             }
-
         });
     }
 
