@@ -166,7 +166,12 @@ public class MainActivity extends AppCompatActivity {
         cameraProviderFuture.addListener(() -> {
             try{
                 cameraProvider = cameraProviderFuture.get();
-                bindPreview(cameraProvider);
+                MyGLSurfaceView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        bindPreview(cameraProvider);
+                    }
+                });
             }catch (ExecutionException | InterruptedException e) {
 
             }
@@ -220,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
         // preview를 previewView에 연결한다.
         //camera = cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview, imageCapture);
-        cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview, imageCapture);
+        cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis);
     }
 
     @Override
