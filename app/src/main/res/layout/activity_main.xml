@@ -20,17 +20,14 @@
     </androidx.appcompat.widget.Toolbar>
 
     <FrameLayout
-        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="500dp"
         android:background="@color/cardview_shadow_start_color">
-
-        <androidx.camera.view.PreviewView
-            android:id="@+id/previewView"
+        <android.opengl.GLSurfaceView
+            android:id="@+id/glSurfaceView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" >
-        </androidx.camera.view.PreviewView>
+            android:visibility="visible" />
         <ImageView
             android:id="@+id/iv_captured"
             android:layout_width="match_parent"
@@ -40,7 +37,6 @@
             android:visibility="gone"
             android:contentDescription="@string/iv_captured_contentDescription"
             tools:ignore="ContentDescription" />
-
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

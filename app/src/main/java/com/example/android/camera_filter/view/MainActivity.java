@@ -3,18 +3,21 @@ package com.example.android.camera_filter.view;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.camera.core.Camera;
+import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+//import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.util.Size;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.View;
@@ -31,17 +34,22 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.pedro.library.AutoPermissions;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     Toolbar tb;
     long backBtnTime = 0;
 
     ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
-    PreviewView previewView;
     Preview preview;
+    GLSurfaceView MyGLSurfaceView;
+    MyGLRenderer renderer;
+    final ExecutorService executors = Executors.newSingleThreadExecutor();
     ProcessCameraProvider cameraProvider;
     CameraSelector cameraSelector;
-    Camera camera;
+    ImageAnalysis imageAnalysis;
+//    Camera camera;
     ImageButton btn_capture, btn_filterSelection;
     ImageCapture imageCapture;
 
@@ -56,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         tb = findViewById(R.id.tb);
-        previewView = findViewById(R.id.previewView);
+        MyGLSurfaceView = findViewById(R.id.glSurfaceView);
+        renderer = new MyGLRenderer(MyGLSurfaceView);
         btn_capture = findViewById(R.id.btn_capture);
         iv_captured = findViewById(R.id.iv_captured);
         btn_filterSelection = findViewById(R.id.btn_filterSelection);
@@ -65,6 +74,13 @@ public class MainActivity extends AppCompatActivity {
 
         //툴바를 액티비티의 앱바로 지정
         setSupportActionBar(tb);
+
+        //카메라 필터 적용
+        MyGLSurfaceView.setPreserveEGLContextOnPause(true);
+        MyGLSurfaceView.setEGLContextClientVersion(2);
+        MyGLSurfaceView.setRenderer(renderer);
+        MyGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+//        setUpCamera();
 
         //카메라 미리보기 설정
         setupCamera();
@@ -92,9 +108,24 @@ public class MainActivity extends AppCompatActivity {
 
         });
     }
-
+//
+//    void setUpCamera(){
+//        MyGLSurfaceView.post(() -> startCamera());
+//    }
+//    void startCamera(){
+//        CameraX.bindToLifecycle(this, imageAnalyzer());
+//    }
+//    UseCase imageAnalyzer(){
+//        ImageAnalysisConfig analysisConfig = new ImageAnalysisConfig.Builder()
+//                .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
+//                .setTargetResolution(new Size(1280, 720))
+//                .build();
+//        ImageAnalysis imageAnalysis = new ImageAnalysis(analysisConfig);
+//        imageAnalysis.setAnalyzer(executors, renderer);
+//        return imageAnalysis;
+//    }
     void capture(){
-        imageCapture.takePicture(ContextCompat.getMainExecutor(this), new ImageCapture.OnImageCapturedCallback() {
+        imageCapture.takePicture(executors, new ImageCapture.OnImageCapturedCallback() {
             @Override
             public void onCaptureSuccess(@NonNull ImageProxy imageProxy) {
                 super.onCaptureSuccess(imageProxy);
@@ -109,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 Glide.with(getApplicationContext())
                         .load(rotateImg)
                         .into(iv_captured);
-                previewView.setVisibility(View.GONE);
+                MyGLSurfaceView.setVisibility(View.GONE);
                 iv_captured.setVisibility(View.VISIBLE);
 
                 imageProxy.close();
@@ -145,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
     void bindPreview(@NonNull ProcessCameraProvider cameraProvider){
         // Preview를 만든다.
         preview = new Preview.Builder()
+                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .build();
 
         // 원하는 카메라 LensFacing 옵션을 지정한다.
@@ -153,10 +185,17 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         // 선택한 카메라와 사용 사례를 수명 주기에 결합한다.
-        preview.setSurfaceProvider(previewView.getSurfaceProvider());
+//        preview.setSurfaceProvider((Preview.SurfaceProvider) MyGLSurfaceView);
 
         // 사진을 찍기 위한 기본적인 컨트롤 제공
         imageCapture = new ImageCapture.Builder().build();
+
+        //이미지 분석(이미지 처리, 컴퓨터 비전 또는 머신러닝 추론을 진행할 수 있도록 CPU에서 액세스 가능한 이미지를 앱에 제공)
+        imageAnalysis = new ImageAnalysis.Builder()
+                .setTargetResolution(new Size(1280, 720))
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build();
+        imageAnalysis.setAnalyzer(executors, renderer);
 
         //회전(얼굴 인식에서 얼굴의 방향을 올바르게 감지하거나 사진이 가로 또는 세로 모드로 설정되도록 하기 위해 회전 인식이 필요할 수 있음)
         OrientationEventListener orientationEventListener = new OrientationEventListener(this) {
@@ -180,7 +219,8 @@ public class MainActivity extends AppCompatActivity {
         orientationEventListener.enable();
 
         // preview를 previewView에 연결한다.
-        camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
+        //camera = cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview, imageCapture);
+        cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview, imageCapture);
     }
 
     @Override
@@ -188,14 +228,14 @@ public class MainActivity extends AppCompatActivity {
         long curTime = System.currentTimeMillis();
         long gapTime = curTime - backBtnTime;
 
-        if(previewView.getVisibility() == View.GONE && iv_captured.getVisibility() == View.VISIBLE) {
-            previewView.setVisibility(View.VISIBLE);
-            iv_captured.setVisibility(View.GONE);
-        }else if(isUp){
+        if(isUp) {
             Animation translateDown = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.translate_down);
             sv_filter.setVisibility(View.GONE);
             sv_filter.startAnimation(translateDown);
             isUp = false;
+        }else if(MyGLSurfaceView.getVisibility() == View.GONE && iv_captured.getVisibility() == View.VISIBLE){
+            MyGLSurfaceView.setVisibility(View.VISIBLE);
+            iv_captured.setVisibility(View.GONE);
         }else{
             //두번 눌러 뒤로가기 종료
             if(0 <= gapTime && 2000 >= gapTime){
