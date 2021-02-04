@@ -4,13 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.AspectRatio;
+import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
-//import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.android.camera_filter.R;
+import com.example.android.camera_filter.view.filter.MyGLRenderer;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.pedro.library.AutoPermissions;
 import java.nio.ByteBuffer;
@@ -43,13 +45,14 @@ public class MainActivity extends AppCompatActivity {
 
     ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     Preview preview;
-    GLSurfaceView MyGLSurfaceView;
+    PreviewView previewView;
+    GLSurfaceView glSurfaceView;
     MyGLRenderer renderer;
     final ExecutorService executors = Executors.newSingleThreadExecutor();
     ProcessCameraProvider cameraProvider;
     CameraSelector cameraSelector;
     ImageAnalysis imageAnalysis;
-//    Camera camera;
+    Camera camera;
     ImageButton btn_capture, btn_filterSelection;
     ImageCapture imageCapture;
 
@@ -64,8 +67,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         tb = findViewById(R.id.tb);
-        MyGLSurfaceView = findViewById(R.id.glSurfaceView);
-        renderer = new MyGLRenderer(MyGLSurfaceView);
+        previewView = findViewById(R.id.previewView);
+        glSurfaceView = findViewById(R.id.glSurfaceView);
+        renderer = new MyGLRenderer(glSurfaceView);
         btn_capture = findViewById(R.id.btn_capture);
         iv_captured = findViewById(R.id.iv_captured);
         btn_filterSelection = findViewById(R.id.btn_filterSelection);
@@ -76,16 +80,17 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(tb);
 
         //카메라 필터 적용
-        MyGLSurfaceView.setPreserveEGLContextOnPause(true);
-        MyGLSurfaceView.setEGLContextClientVersion(2);
-        MyGLSurfaceView.setRenderer(renderer);
-        MyGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-//        setUpCamera();
+        glSurfaceView.setPreserveEGLContextOnPause(true);
+        glSurfaceView.setEGLContextClientVersion(2);
+        glSurfaceView.setRenderer(renderer);
+        //Surface가 생성될때와 GLSurfaceView클래스의 requestRender 메소드가 호출될때에만
+        //화면을 다시 그리게 됩니다
+        glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-        //카메라 미리보기 설정
-        setupCamera();
         //카메라 권한체크
         AutoPermissions.Companion.loadAllPermissions(this, 321);
+        //카메라 미리보기 설정
+        setupCamera();
 
         //사진찍기
         btn_capture.setOnClickListener(new View.OnClickListener() {
@@ -105,27 +110,16 @@ public class MainActivity extends AppCompatActivity {
 
         //카메라에 필터1 입히기
         filter1.setOnClickListener(v -> {
-
+            if(glSurfaceView.getVisibility() == View.INVISIBLE){
+                glSurfaceView.setVisibility(View.VISIBLE);
+            }else{
+                glSurfaceView.setVisibility(View.INVISIBLE);
+            }
         });
     }
-//
-//    void setUpCamera(){
-//        MyGLSurfaceView.post(() -> startCamera());
-//    }
-//    void startCamera(){
-//        CameraX.bindToLifecycle(this, imageAnalyzer());
-//    }
-//    UseCase imageAnalyzer(){
-//        ImageAnalysisConfig analysisConfig = new ImageAnalysisConfig.Builder()
-//                .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
-//                .setTargetResolution(new Size(1280, 720))
-//                .build();
-//        ImageAnalysis imageAnalysis = new ImageAnalysis(analysisConfig);
-//        imageAnalysis.setAnalyzer(executors, renderer);
-//        return imageAnalysis;
-//    }
+
     void capture(){
-        imageCapture.takePicture(executors, new ImageCapture.OnImageCapturedCallback() {
+        imageCapture.takePicture(ContextCompat.getMainExecutor(this), new ImageCapture.OnImageCapturedCallback() {
             @Override
             public void onCaptureSuccess(@NonNull ImageProxy imageProxy) {
                 super.onCaptureSuccess(imageProxy);
@@ -140,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                 Glide.with(getApplicationContext())
                         .load(rotateImg)
                         .into(iv_captured);
-                MyGLSurfaceView.setVisibility(View.GONE);
+                previewView.setVisibility(View.GONE);
                 iv_captured.setVisibility(View.VISIBLE);
 
                 imageProxy.close();
@@ -166,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         cameraProviderFuture.addListener(() -> {
             try{
                 cameraProvider = cameraProviderFuture.get();
-                MyGLSurfaceView.post(new Runnable() {
+                glSurfaceView.post(new Runnable() {
                     @Override
                     public void run() {
                         bindPreview(cameraProvider);
@@ -183,14 +177,14 @@ public class MainActivity extends AppCompatActivity {
         preview = new Preview.Builder()
                 .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .build();
+        // 선택한 카메라와 사용 사례를 수명 주기에 결합한다.
+        preview.setSurfaceProvider(previewView.getSurfaceProvider());
+//        preview.setSurfaceProvider((Preview.SurfaceProvider) glSurfaceView);
 
         // 원하는 카메라 LensFacing 옵션을 지정한다.
         cameraSelector = new CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build();
-
-        // 선택한 카메라와 사용 사례를 수명 주기에 결합한다.
-//        preview.setSurfaceProvider((Preview.SurfaceProvider) MyGLSurfaceView);
 
         // 사진을 찍기 위한 기본적인 컨트롤 제공
         imageCapture = new ImageCapture.Builder().build();
@@ -224,8 +218,7 @@ public class MainActivity extends AppCompatActivity {
         orientationEventListener.enable();
 
         // preview를 previewView에 연결한다.
-        //camera = cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview, imageCapture);
-        cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis);
+        camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture, imageAnalysis);
     }
 
     @Override
@@ -238,8 +231,8 @@ public class MainActivity extends AppCompatActivity {
             sv_filter.setVisibility(View.GONE);
             sv_filter.startAnimation(translateDown);
             isUp = false;
-        }else if(MyGLSurfaceView.getVisibility() == View.GONE && iv_captured.getVisibility() == View.VISIBLE){
-            MyGLSurfaceView.setVisibility(View.VISIBLE);
+        }else if(previewView.getVisibility() == View.GONE && iv_captured.getVisibility() == View.VISIBLE){
+            previewView.setVisibility(View.VISIBLE);
             iv_captured.setVisibility(View.GONE);
         }else{
             //두번 눌러 뒤로가기 종료

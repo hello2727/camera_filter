@@ -1,4 +1,4 @@
-package com.example.android.camera_filter.view;
+package com.example.android.camera_filter.view.filter;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,6 +12,7 @@ import android.opengl.GLUtils;
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
+
 import java.nio.ByteBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -39,7 +40,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analy
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         //color buffer를 클리어할 때 사용할 색을 지정합니다.
         //red, green, blue, alpha 순으로 0~1사이의 값을 지정합니다.
-//        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+//        GLES20.glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
     }
 
     //GLSurfaceView가 다시 그려질때 마다 호출되는 메소드입니다.
@@ -50,9 +51,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analy
         //Color buffer (GL_COLOR_BUFFER_BIT)
         //depth buffer (GL_DEPTH_BUFFER_BIT)
         //stencil buffer (GL_STENCIL_BUFFER_BIT)i4rh
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT); //**중요
+
         generateSquare();
         generateTexture();
-//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         if(effectContext == null){
             effectContext = EffectContext.createWithCurrentGlContext();
@@ -108,19 +110,9 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analy
         //viewport rectangle의 왼쪽 아래를 (0,0)으로 지정하고
         //viewport의 width와 height를 지정합니다.
         GLES20.glViewport(0, 0, width, height);
-        GLES20.glClearColor(0f, 0f, 0f, 1f);
+        GLES20.glClearColor(0f, 0f, 1f, 0f);
         generateSquare();
     }
-
-//    @Override
-//    public void analyze(ImageProxy image, int rotationDegrees) {
-//        Matrix matrix = new Matrix();
-//        matrix.postRotate(rotationDegrees);
-//
-////        Bitmap bitmap = Bitmap.createBitmap()
-//
-//        mGlSurfaceView.requestRender();
-//    }
 
     @Override
     public void analyze(@NonNull ImageProxy image) {

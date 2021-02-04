@@ -23,11 +23,16 @@
         android:layout_width="match_parent"
         android:layout_height="500dp"
         android:background="@color/cardview_shadow_start_color">
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible" />
         <android.opengl.GLSurfaceView
             android:id="@+id/glSurfaceView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" />
+            android:visibility="invisible" />
         <ImageView
             android:id="@+id/iv_captured"
             android:layout_width="match_parent"
