@@ -20,6 +20,7 @@
     </androidx.appcompat.widget.Toolbar>
 
     <FrameLayout
+        android:id="@+id/captured_picture"
         android:layout_width="match_parent"
         android:layout_height="500dp"
         android:background="@color/cardview_shadow_start_color">
@@ -110,7 +111,7 @@
                     android:paddingStart="30dp"
                     android:paddingTop="40dp"
                     android:paddingBottom="40dp"
-                    android:text="필터종류"
+                    android:text="필터1"
                     android:textColor="@color/black" />
             </LinearLayout>
         </ScrollView>

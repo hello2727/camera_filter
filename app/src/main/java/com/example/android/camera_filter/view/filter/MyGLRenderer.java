@@ -12,7 +12,6 @@ import android.opengl.GLUtils;
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
-
 import java.nio.ByteBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -20,18 +19,15 @@ import javax.microedition.khronos.opengles.GL10;
 public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analyzer {
     GLSurfaceView mGlSurfaceView;
 
-    static int[] textures = new int[2];
-    Square square;
+    private int textures[] = new int[2];
+    private Square square;
+    Bitmap photo;
     EffectContext effectContext;
     Effect effect;
-    Bitmap image;
-    public MyGLRenderer(GLSurfaceView glSurfaceView) {
-        this.mGlSurfaceView = glSurfaceView;
-    }
 
-    void setImage(Bitmap image){
-        this.image.recycle();
-        this.image = image;
+    public MyGLRenderer(GLSurfaceView glSurfaceView) {
+        super();
+        this.mGlSurfaceView = glSurfaceView;
     }
 
     //GLSurfaceView가 생성되었을때 한번 호출되는 메소드입니다.
@@ -41,6 +37,20 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analy
         //color buffer를 클리어할 때 사용할 색을 지정합니다.
         //red, green, blue, alpha 순으로 0~1사이의 값을 지정합니다.
 //        GLES20.glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+    }
+
+    //GLSurfaceView의 크기 변경 또는 디바이스 화면의 방향 전환 등으로 인해
+    //GLSurfaceView의 geometry가 바뀔때 호출되는 메소드입니다.
+    @Override
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        //viewport를 설정합니다.
+        //specifies the affine transformation of x and y from
+        //normalized device coordinates to window coordinates
+        //viewport rectangle의 왼쪽 아래를 (0,0)으로 지정하고
+        //viewport의 width와 height를 지정합니다.
+        GLES20.glViewport(0, 0, width, height);
+        GLES20.glClearColor(0.5f, 0.6f, 0.7f, 0.5f);
+        generateSquare();
     }
 
     //GLSurfaceView가 다시 그려질때 마다 호출되는 메소드입니다.
@@ -54,7 +64,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analy
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT); //**중요
 
         generateSquare();
-        generateTexture();
 
         if(effectContext == null){
             effectContext = EffectContext.createWithCurrentGlContext();
@@ -63,20 +72,15 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analy
         if(effect != null){
             effect.release();
         }
-        applyEffect();
+
+        grayScaleEffect();
 
         if(square != null){
-            square.draw(textures[1]);
+//            square.draw(textures[1]);
         }
     }
 
     void generateSquare(){
-        if(square == null){
-            square = new Square();
-        }
-    }
-
-    void generateTexture(){
         GLES20.glGenTextures(2, textures, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
 
@@ -85,33 +89,21 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analy
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
-        if(image != null){
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, image, 0);
+        if(photo != null){
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, photo, 0);
         }
+        square = new Square();
     }
 
-    void applyEffect(){
-        Bitmap image = this.image;
+    void grayScaleEffect(){
         EffectContext effectContext = this.effectContext;
-        if(image != null && effectContext != null){
-            EffectFactory factory = effectContext.getFactory();
-            effect = factory.createEffect(EffectFactory.EFFECT_SEPIA);
-            effect.apply(textures[0], image.getWidth(), image.getHeight(), textures[1]);
-        }
-    }
 
-    //GLSurfaceView의 크기 변경 또는 디바이스 화면의 방향 전환 등으로 인해
-    //GLSurfaceView의 geometry가 바뀔때 호출되는 메소드입니다.
-    @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-        //viewport를 설정합니다.
-        //specifies the affine transformation of x and y from
-        //normalized device coordinates to window coordinates
-        //viewport rectangle의 왼쪽 아래를 (0,0)으로 지정하고
-        //viewport의 width와 height를 지정합니다.
-        GLES20.glViewport(0, 0, width, height);
-        GLES20.glClearColor(0f, 0f, 1f, 0f);
-        generateSquare();
+        EffectFactory factory = effectContext.getFactory();
+        effect = factory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
+
+        if(photo != null && effectContext != null){
+            effect.apply(textures[0], photo.getWidth(), photo.getHeight(), textures[1]);
+        }
     }
 
     @Override
@@ -129,6 +121,13 @@ public class MyGLRenderer implements GLSurfaceView.Renderer, ImageAnalysis.Analy
         setImage(bm);
 
         mGlSurfaceView.requestRender();
+    }
+
+    public void setImage(Bitmap image){
+        if(photo != null){
+            this.photo.recycle();
+            this.photo = image;
+        }
     }
 
     //이미지프록시를 비트맵으로 변환

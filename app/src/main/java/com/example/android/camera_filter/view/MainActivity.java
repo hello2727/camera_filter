@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Size;
@@ -24,6 +25,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ScrollView;
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     Camera camera;
     ImageButton btn_capture, btn_filterSelection;
     ImageCapture imageCapture;
+    FrameLayout captured_picture;
 
     ImageView iv_captured;
     ScrollView sv_filter;
@@ -75,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         btn_filterSelection = findViewById(R.id.btn_filterSelection);
         sv_filter = findViewById(R.id.sv_filter);
         filter1 = findViewById(R.id.filter1);
+        captured_picture = findViewById(R.id.captured_picture);
 
         //툴바를 액티비티의 앱바로 지정
         setSupportActionBar(tb);
@@ -82,6 +86,10 @@ public class MainActivity extends AppCompatActivity {
         //카메라 필터 적용
         glSurfaceView.setPreserveEGLContextOnPause(true);
         glSurfaceView.setEGLContextClientVersion(2);
+        glSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        glSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT); //투명
+        //GLSurfaceView 가 Camera preview 보다 상위에서 그려지도록 한다.
+        glSurfaceView.setZOrderOnTop(true);
         glSurfaceView.setRenderer(renderer);
         //Surface가 생성될때와 GLSurfaceView클래스의 requestRender 메소드가 호출될때에만
         //화면을 다시 그리게 됩니다
@@ -124,16 +132,18 @@ public class MainActivity extends AppCompatActivity {
             public void onCaptureSuccess(@NonNull ImageProxy imageProxy) {
                 super.onCaptureSuccess(imageProxy);
 
+                int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
                 Matrix roatateMatrix = new Matrix();
-                roatateMatrix.postRotate(90);
+                roatateMatrix.postRotate(rotationDegrees);
 
                 //비트맵으로 변환 후 회전
                 Bitmap originImg = imageProxyToBitmap(imageProxy);
-                Bitmap rotateImg = Bitmap.createBitmap(originImg, 0, 0, originImg.getWidth(), originImg.getHeight(), roatateMatrix, false);
+                Bitmap rotateImg = Bitmap.createBitmap(originImg, 0, 0, originImg.getWidth(), originImg.getHeight(), roatateMatrix, true);
 
                 Glide.with(getApplicationContext())
                         .load(rotateImg)
                         .into(iv_captured);
+
                 previewView.setVisibility(View.GONE);
                 iv_captured.setVisibility(View.VISIBLE);
 
@@ -179,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         // 선택한 카메라와 사용 사례를 수명 주기에 결합한다.
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
-//        preview.setSurfaceProvider((Preview.SurfaceProvider) glSurfaceView);
 
         // 원하는 카메라 LensFacing 옵션을 지정한다.
         cameraSelector = new CameraSelector.Builder()

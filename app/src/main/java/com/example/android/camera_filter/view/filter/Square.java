@@ -1,7 +1,6 @@
 package com.example.android.camera_filter.view.filter;
 
 import android.opengl.GLES20;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -27,20 +26,22 @@ public class Square {
     int fragmentShader = 0;
     int program = 0;
 
-    final String vertexShaderCode = "attribute vec4 aPosition;" +
-            "attribute vec2 aTexPosition;" +
-            "varying vec2 vTexPosition;" +
-            "void main() {" +
-            "  gl_Position = aPosition;" +
-            "  vTexPosition = aTexPosition;" +
-            "}";
+    private final String vertexShaderCode =
+            "attribute vec4 aPosition;" +
+                    "attribute vec2 aTexPosition;" +
+                    "varying vec2 vTexPosition;" +
+                    "void main() {" +
+                    "  gl_Position = aPosition;" +
+                    "  vTexPosition = aTexPosition;" +
+                    "}";
 
-    final String fragmentShaderCode = "precision mediump float;" +
-            "uniform sampler2D uTexture;" +
-            "varying vec2 vTexPosition;" +
-            "void main() {" +
-            "  gl_FragColor = texture2D(uTexture, vTexPosition);" +
-            "}";
+    private final String fragmentShaderCode =
+            "precision mediump float;" +
+                    "uniform sampler2D uTexture;" +
+                    "varying vec2 vTexPosition;" +
+                    "void main() {" +
+                    "  gl_FragColor = texture2D(uTexture, vTexPosition);" +
+                    "}";
 
     public Square() {
         initializeBuffers();
@@ -48,7 +49,7 @@ public class Square {
     }
 
     void initializeBuffers(){
-        ByteBuffer buff = ByteBuffer.allocateDirect(vertices.length*4);
+        ByteBuffer buff = ByteBuffer.allocateDirect(vertices.length * 4);
         buff.order(ByteOrder.nativeOrder());
         verticesBuffer = buff.asFloatBuffer();
         verticesBuffer.put(vertices);
