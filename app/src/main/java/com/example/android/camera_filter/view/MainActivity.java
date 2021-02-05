@@ -33,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.android.camera_filter.R;
+import com.example.android.camera_filter.util.YuvToRgbConverter;
 import com.example.android.camera_filter.view.filter.MyGLRenderer;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.pedro.library.AutoPermissions;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton btn_capture, btn_filterSelection;
     ImageCapture imageCapture;
     FrameLayout captured_picture;
+    YuvToRgbConverter converter;
 
     ImageView iv_captured;
     ScrollView sv_filter;
@@ -71,8 +73,9 @@ public class MainActivity extends AppCompatActivity {
 
         tb = findViewById(R.id.tb);
         previewView = findViewById(R.id.previewView);
+        converter = new YuvToRgbConverter(this);
         glSurfaceView = findViewById(R.id.glSurfaceView);
-        renderer = new MyGLRenderer(glSurfaceView);
+        renderer = new MyGLRenderer(glSurfaceView, converter, this);
         btn_capture = findViewById(R.id.btn_capture);
         iv_captured = findViewById(R.id.iv_captured);
         btn_filterSelection = findViewById(R.id.btn_filterSelection);

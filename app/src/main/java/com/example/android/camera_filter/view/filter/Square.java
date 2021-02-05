@@ -5,26 +5,24 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import javax.microedition.khronos.opengles.GL10;
+
 public class Square {
-    static final float vertices[] = {
+    private FloatBuffer verticesBuffer;
+    private FloatBuffer textureBuffer;
+
+    private float vertices[] = {
             -1f, -1f,
             1f, -1f,
             -1f, 1f,
-            1f, 1f
-    };
-    static final float textureVertices[] = {
-            0f, 1f,
             1f, 1f,
-            0f, 0f,
-            1f, 0f
     };
-
-    FloatBuffer verticesBuffer;
-    FloatBuffer textureBuffer;
-
-    int vertexShader = 0;
-    int fragmentShader = 0;
-    int program = 0;
+    private float textureVertices[] = {
+            0f,1f,
+            1f,1f,
+            0f,0f,
+            1f,0f
+    };
 
     private final String vertexShaderCode =
             "attribute vec4 aPosition;" +
@@ -43,12 +41,16 @@ public class Square {
                     "  gl_FragColor = texture2D(uTexture, vTexPosition);" +
                     "}";
 
+    int mProgram;
+    private int vertexShader;
+    private int fragmentShader;
+
     public Square() {
         initializeBuffers();
         initializeProgram();
     }
 
-    void initializeBuffers(){
+    private void initializeBuffers(){
         ByteBuffer buff = ByteBuffer.allocateDirect(vertices.length * 4);
         buff.order(ByteOrder.nativeOrder());
         verticesBuffer = buff.asFloatBuffer();
@@ -62,7 +64,7 @@ public class Square {
         textureBuffer.position(0);
     }
 
-    void initializeProgram(){
+    private void initializeProgram(){
         vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
         GLES20.glShaderSource(vertexShader, vertexShaderCode);
         GLES20.glCompileShader(vertexShader);
@@ -71,21 +73,21 @@ public class Square {
         GLES20.glShaderSource(fragmentShader, fragmentShaderCode);
         GLES20.glCompileShader(fragmentShader);
 
-        program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vertexShader);
-        GLES20.glAttachShader(program, fragmentShader);
+        mProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(mProgram, vertexShader);
+        GLES20.glAttachShader(mProgram, fragmentShader);
 
-        GLES20.glLinkProgram(program);
+        GLES20.glLinkProgram(mProgram);
     }
 
-    void draw(int texture){
+    public void draw(int texture){
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-        GLES20.glUseProgram(program);
+        GLES20.glUseProgram(mProgram);
         GLES20.glDisable(GLES20.GL_BLEND);
 
-        int positionHandle = GLES20.glGetAttribLocation(program, "aPosition");
-        int textureHandle = GLES20.glGetUniformLocation(program, "uTexture");
-        int texturePositionHandle = GLES20.glGetAttribLocation(program, "aTexPosition");
+        int positionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
+        int textureHandle = GLES20.glGetUniformLocation(mProgram, "uTexture");
+        int texturePositionHandle = GLES20.glGetAttribLocation(mProgram, "aTexPosition");
 
         GLES20.glVertexAttribPointer(texturePositionHandle, 2, GLES20.GL_FLOAT, false, 0, textureBuffer);
         GLES20.glEnableVertexAttribArray(texturePositionHandle);
