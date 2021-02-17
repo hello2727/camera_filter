@@ -12,6 +12,10 @@
 
 결과물
 -----------------
+- 처음 앱 실행시 나타나는 권한 허용 선택창
+<div>
+  <img width="200" src="https://user-images.githubusercontent.com/43267195/108215998-4bb1fc00-7175-11eb-809e-8b74a41f5a51.PNG"> 
+</div>
 
 환경설정
 -----------------
