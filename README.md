@@ -9,4 +9,54 @@
 결과물
 -----------------
 
-### 환경설정
+환경설정
+-----------------
+- build.gradle(module)
+```
+dependencies {
+  ...
+    //필요한 모든 권한체크
+    implementation 'com.github.pedroSG94:AutoPermissions:1.0.3'
+
+    //CameraX 사용하기
+    // CameraX core library using the camera2 implementation
+    def camerax_version = '1.1.0-alpha01'
+    def camerax_version2 = "1.0.0-alpha17"
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    // If you want to additionally use the CameraX Lifecycle library
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    // If you want to additionally use the CameraX View class
+    implementation "androidx.camera:camera-view:${camerax_version2}"
+    // If you want to additionally use the CameraX Extensions library
+    implementation "androidx.camera:camera-extensions:${camerax_version2}"
+
+    // Glide dependencies
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+}
+```
+- build.gradle(Project)
+```
+allprojects {
+        ...
+        maven {
+            url 'https://jitpack.io'
+        }
+}
+```
+- manifest
+```
+...
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+<application
+  android:usesCleartextTraffic="true"
+  android:allowBackup="false"
+  <meta-data
+        android:name="com.naver.maps.map.CLIENT_ID"
+        android:value="{값}"/>
+</application>        
+```
