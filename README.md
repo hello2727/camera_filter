@@ -17,6 +17,11 @@
   <img width="200" src="https://user-images.githubusercontent.com/43267195/108215998-4bb1fc00-7175-11eb-809e-8b74a41f5a51.PNG"> 
 </div>
 
+- 권한 허용 후 보여지는 카메라화면
+<div>
+  <img width="200" src="https://user-images.githubusercontent.com/43267195/108217010-705aa380-7176-11eb-93a4-d209f751aba6.PNG"> 
+</div>
+
 환경설정
 -----------------
 - build.gradle(module)
